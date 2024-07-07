@@ -1,0 +1,1 @@
+{"wifi": {"ssid": "Luna", "status": "1", "password": "#buZZ91_fates!"}, "hopper": {"current_pellets": "Hickory", "empty_measurement": 13.0, "poll_frequency": 5, "full_measurement": 13.0}, "mqtt": {"status": "1", "user": "hass-mqtt", "broker_ip": "10.222.76.3", "client_id": "hopperhawk", "broker_port": "1883", "password": "bwUWVx688JroSaX"}}
