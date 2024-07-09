@@ -1,0 +1,1 @@
+{"wifi": {"ssid": "", "status": 1, "password": ""}, "hopper": {"current_pellets": "Mesquite", "empty_measurement": 354.0, "poll_frequency": 300, "full_measurement": 49.0}, "mqtt": {"user": "", "password": "", "broker_ip": "", "status": 1, "broker_port": 1883, "client_id": "hopperhawk"}}

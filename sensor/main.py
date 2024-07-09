@@ -171,8 +171,14 @@ def sensor_routine():
         # Get the current hopper level (in cm), save globally for access via webserver
         global current_level
         m = sensor.calc_remaining(config['hopper']['empty_measurement'],config['hopper']['full_measurement'])
-        if m >= 0:
-            current_level = m
+
+   
+        # Filter out minor measurement changes
+        if abs(m-current_level) >= 4:
+            if m >= 0:
+                current_level = m
+            else:
+                current_level = 0
             
         # If MQTT is enabled, publish the data
         if config['mqtt']['status'] == 1:
@@ -185,8 +191,13 @@ def sensor_routine():
 def manual_refresh():
     global current_level
     m = sensor.calc_remaining(config['hopper']['empty_measurement'],config['hopper']['full_measurement'])
-    if m >= 0:
-        current_level = m
+    
+    # Filter out minor measurement changes
+    if abs(m-current_level) >= 4:
+        if m >= 0:
+            current_level = m
+        else:
+            current_level = 0
         
     # If MQTT is enabled, publish the data
     if config['mqtt']['status'] == 1:
@@ -219,6 +230,7 @@ async def main():
 
 if __name__ == '__main__':
     # Load the config file
+    print("running")
     try:
         config = json.load(open("config.json","r"))
     except:
@@ -233,8 +245,8 @@ if __name__ == '__main__':
     
     # Setup listeners for battery
     batt_pg = Pin(25, Pin.IN, Pin.PULL_UP)
-    batt_s1 = Pin(26, Pin.IN, Pin.PULL_UP)
-    batt_s2 = Pin(27, Pin.IN, Pin.PULL_UP)
+    batt_s1 = Pin(27, Pin.IN, Pin.PULL_UP)
+    batt_s2 = Pin(26, Pin.IN, Pin.PULL_UP)
     batt_pg.irq(trigger = Pin.IRQ_RISING | Pin.IRQ_FALLING, handler = push_batt_status)
     batt_s1.irq(trigger = Pin.IRQ_RISING | Pin.IRQ_FALLING, handler = push_batt_status)
     batt_s2.irq(trigger = Pin.IRQ_RISING | Pin.IRQ_FALLING, handler = push_batt_status)
@@ -244,6 +256,7 @@ if __name__ == '__main__':
     
     # Configure the network
     status = connect_network()
+    
 
     # Start
     asyncio.run(main())
