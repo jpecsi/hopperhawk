@@ -1,0 +1,280 @@
+###################################
+#         [HopperHawk]            #
+#      Version: 2024.11.1         #
+#     Published: 11/01/2024       #
+# Joe Pecsi | Sideline Data, LLC. #
+###################################
+
+# ====== System Configuration ===== #
+# System Setup
+esphome:
+  name: hopperhawk
+  friendly_name: HopperHawk
+  project:
+      name: "sidelinedata.hopperhawk"
+      version: "2024.11.1"
+
+# Board Configuration
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Logging
+logger:
+
+# Enable captive portal for WiFi configuration
+captive_portal:
+
+# Web server for configuration
+web_server:
+  port: 80
+  local: true
+  include_internal: true
+
+# Over the Air Update Configuration
+ota:
+  - platform: esphome
+    # password: !secret ota_password
+
+# Network Configuration
+wifi:
+  # ssid: !secret wifi_ssid
+  # password: !secret wifi_password
+
+  # Fallback hotspot if wifi unavilable
+  ap:
+    ssid: "HopperHawk"
+    password: "HopperHawk2024"
+
+# Home Assistant API
+api:
+  # encryption:
+    # key: !secret api_encryption_key
+    
+# Enable mDNS for discovery
+mdns:
+
+# Enable improv
+improv_serial:
+
+# I2C Bus Configuration
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+  frequency: 100kHz
+# ====== System Configuration ===== #
+
+
+# ===== Global Variables ===== #
+globals:
+  # Measurement of Full Hopper (should be smaller number)
+  - id: full_distance_global
+    type: float
+    restore_value: yes
+    initial_value: '49'   # Measured in millimeters (mm)
+
+  # Measurement of Empty Hopper (should be larger number)
+  - id: empty_distance_global
+    type: float
+    restore_value: yes
+    initial_value: '354'  # Measured in millimeters (mm)
+# ===== Global Variables ===== #
+
+
+# ===== Sensors ===== #
+sensor:
+  # TOF10120 Measurement Sensor
+  - platform: tof10120
+    name: "Hopper Level"
+    id: tof_sensor
+    icon: "mdi:arrow-expand-vertical"
+    unit_of_measurement: "mm"
+    update_interval: 899s
+    filters:
+      - multiply: 1000
+    accuracy_decimals: 0
+
+  # ADC for Voltage Monitoring (Battery)
+  - platform: adc
+    pin: GPIO34
+    name: "Battery Voltage"
+    id: battery_voltage
+    icon: "mdi:sine-wave"
+    attenuation: 12db
+    unit_of_measurement: "V"
+    update_interval: 600s
+    accuracy_decimals: 2
+    filters:
+      multiply: 2
+
+  # Battery Remaining Calculation
+  - platform: template
+    name: "Battery Remaining"
+    id: battery_remaining
+    icon: "mdi:battery-clock"
+    unit_of_measurement: "%"
+    update_interval: 601s
+    lambda: |-
+      // Get the current voltage
+      float voltage = id(battery_voltage)->state;
+
+      // Define battery voltage range
+      float max_voltage = 4.2;  // Maximum battery voltage
+      float min_voltage = 2.8;  // Minimum battery voltage
+
+      // Calculate percentage
+      float percentage = ((voltage - min_voltage) / (max_voltage - min_voltage)) * 100.0;
+
+      // Constrain between 0 and 100
+      if (percentage > 100.0) percentage = 100.0;
+      if (percentage < 0.0) percentage = 0.0;
+
+      // Round to whole number
+      return round(percentage);
+
+  # Pellets Remaining Calculation
+  - platform: template
+    name: "Pellets Remaining"
+    id: pellets_remaining
+    icon: "mdi:fire"
+    unit_of_measurement: "%"
+    lambda: |-
+      // Get current distance
+      float current_distance = id(tof_sensor).state;
+
+      //Calculate remaining
+      float percentage = 100.0 - ((current_distance - id(full_distance_global)) / (id(empty_distance_global) - id(full_distance_global))) * 100.0;
+      return std::round(std::max(0.0f, std::min(100.0f, percentage)));
+    update_interval: 900s
+
+  # Full Hopper Measurement (just reporting the value)
+  - platform: template
+    name: "Full Hopper Measurement"
+    id: full_hopper_measurement
+    icon: "mdi:cube"
+    unit_of_measurement: "mm"
+    lambda: |-
+      return (id(full_distance_global));
+
+# Empty Hopper Measurement (just reporting the value)
+  - platform: template
+    name: "Empty Hopper Measurement"
+    id: empty_hopper_measurement
+    icon: "mdi:cube-outline"
+    unit_of_measurement: "mm"
+    lambda: |-
+      return (id(empty_distance_global));
+# ===== Sensors ===== #
+
+
+# ===== Buttons ===== #
+button: 
+  # Calibration: Empty Hopper Measurement
+  - platform: template
+    name: "Measure Empty Hopper"
+    id: btn_empty_hopper_measure
+    icon: "mdi:alpha-e-box-outline"
+    on_press:
+      # Trigger the sensor to take a measurement
+      - component.update: tof_sensor
+      - lambda: |-
+          // Set the empty value to the measurement just taken
+          float current_level = id(tof_sensor).state;
+          id(empty_distance_global) = current_level;
+          ESP_LOGD("lambda", "[Calibration] Setting empty measurement to %f", current_level);
+
+      # Update the measurement value for Home Assistant
+      - component.update: empty_hopper_measurement
+
+  # Calibration: Full Hopper Measurement
+  - platform: template
+    name: "Measure Full Hopper"
+    id: btn_full_hopper_measure
+    icon: "mdi:alpha-f-box-outline"
+    on_press:
+      # Trigger the sensor to take a measurement
+      - component.update: tof_sensor
+      - lambda: |-
+          // Set the full value to the measurement just taken
+          float current_level = id(tof_sensor).state;
+          id(full_distance_global) = current_level;
+          ESP_LOGD("lambda", "[Calibration] Setting full measurement to %f", current_level);
+
+      # Update the measurement value for Home Assistant
+      - component.update: full_hopper_measurement
+
+  # Take a Measurement
+  - platform: template
+    name: "Take Measurement"
+    icon: "mdi:tape-measure"
+    id: btn_take_measurement
+    on_press:
+      # Trigger Updates to Sensor/Pellet Remaining Calculation
+      - component.update: tof_sensor
+      - component.update: pellets_remaining
+# ===== Buttons ===== #
+
+
+# ===== Binary Sensors ===== #
+binary_sensor:
+
+  # Battery Control Module (BCM): PG output
+  - platform: gpio
+    name: "BCM PG"
+    pin: 
+      number: GPIO25
+      mode: 
+        input: True
+        pullup: True
+    id: bcm_pg
+  
+  # Battery Control Module (BCM): STAT1 output
+  - platform: gpio
+    name: "BCM S1"
+    pin: 
+      number: GPIO27
+      mode: 
+        input: True
+        pullup: True
+    id: bcm_s1
+  
+  # Battery Control Module (BCM): STAT2 output
+  - platform: gpio
+    name: "BCM S2"
+    pin:
+      number: GPIO26
+      mode: 
+        input: True
+        pullup: True
+    id: bcm_s2
+# ===== Binary Sensors ===== #
+
+
+# ===== Text Sensors ===== #
+text_sensor:
+  # Battery Status Report (e.g. charging, not charging, etc.)
+  - platform: template
+    id: battery_status
+    name: "Battery Status"
+    icon: "mdi:battery-sync"
+    update_interval: 5s
+    lambda: |-
+      // Battery status is reported by comparing all three BCM outputs: PG, STAT1, STAT2
+      if (id(bcm_pg).state && id(bcm_s1).state && id(bcm_s2).state) {
+      return {"No Input Power"};
+      } else if (!id(bcm_pg).state && !id(bcm_s1).state && !id(bcm_s2).state) {
+      return {"Fault"};
+      } else if (!id(bcm_s1).state && id(bcm_s2).state && !id(bcm_pg).state) {
+      return {"Charging"};
+      } else if (id(bcm_s1).state && !id(bcm_s2).state && !id(bcm_pg).state) {
+      return {"Charge Complete"};
+      } else if (!id(bcm_s1).state && id(bcm_s2).state && id(bcm_pg).state) {
+      return {"Low Battery"};
+      } else if (id(bcm_s1).state && id(bcm_s2).state && !id(bcm_pg).state) {
+      return {"No Battery Present"};
+      } else {
+      return {"Unknown Status"};
+      }
+# ===== Text Sensors ===== #
