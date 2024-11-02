@@ -4,7 +4,7 @@
 
 | Component | Version | Date |
 | --------- | :-------: | :----: | 
-| Hardware  | v1.0    | 11/02/2024 |
+| Hardware  | v1.4    | 03/23/2024 |
 | Firmware  | v1.0    | 11/01/2024 |
 
 
