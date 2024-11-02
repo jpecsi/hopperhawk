@@ -223,6 +223,7 @@ binary_sensor:
   # Battery Control Module (BCM): PG output
   - platform: gpio
     name: "BCM PG"
+    internal: true
     pin: 
       number: GPIO25
       mode: 
@@ -233,6 +234,7 @@ binary_sensor:
   # Battery Control Module (BCM): STAT1 output
   - platform: gpio
     name: "BCM S1"
+    internal: true
     pin: 
       number: GPIO27
       mode: 
@@ -243,6 +245,7 @@ binary_sensor:
   # Battery Control Module (BCM): STAT2 output
   - platform: gpio
     name: "BCM S2"
+    internal: true
     pin:
       number: GPIO26
       mode: 
