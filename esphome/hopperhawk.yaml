@@ -1,6 +1,6 @@
 ###################################
 #         [HopperHawk]            #
-#      Version: 2024.11.1         #
+#         Version: 1.0            #
 #     Published: 11/01/2024       #
 # Joe Pecsi | Sideline Data, LLC. #
 ###################################
@@ -12,7 +12,7 @@ esphome:
   friendly_name: HopperHawk
   project:
       name: "sidelinedata.hopperhawk"
-      version: "2024.11.1"
+      version: "1.0"
 
 # Board Configuration
 esp32:
