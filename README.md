@@ -26,6 +26,8 @@ HopperHawk is an ESPHome-based smart monitoring device designed for pellet smoke
 
 # Instructions
 
+*The steps below will walk you through the process for flashing the HopperHawk custom firmware directly to the device for a clean start. Please be aware that using this firmware by default does not have an OTA password configured or API encryption (for Home Assistant). If you wish to enable these features, you will want to flash stock ESPHome firmware and [follow the steps here](https://github.com/jpecsi/hopperhawk/tree/main/esphome)*
+
 ## Initial Setup
 1. Connect HopperHawk to your computer and power it on
 2. Visit https://web.esphome.io and connect the device
