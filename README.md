@@ -1,6 +1,15 @@
 # HopperHawk
 
-*HopperHawk is an ESPHome-based smart monitoring device designed for pellet smoker enthusiasts. Using a TOF10120 time-of-flight sensor, it continuously measures the pellet level in your smoker's hopper and reports real-time fill status directly to Home Assistant. For additional information, [check out the wiki!](https://github.com/jpecsi/hopperhawk/wiki)*
+*HopperHawk is an ESPHome-based smart monitoring device designed for pellet smoker enthusiasts. Using a TOF10120 time-of-flight sensor, it continuously measures the pellet level in your smoker's hopper and reports real-time fill status directly to Home Assistant. For additional information, [check out the wiki!](https://github.com/jpecsi/hopperhawk/wiki). Interested? You can buy a HopperHawk device from [my Tindie store](https://www.tindie.com/products/sidelinedata/hopperhawk/)!*
+
+
+### Repo Contents
+* [Thorough documentation](https://github.com/jpecsi/hopperhawk/wiki)
+* [Installable/flashable firmware](https://github.com/jpecsi/hopperhawk/releases)
+* [ESPHome configuration files for customization/modification](https://github.com/jpecsi/hopperhawk/tree/main/esphome)
+* [PCB schematics so you can see what this thing is made of](https://github.com/jpecsi/hopperhawk/tree/main/hardware/schematics)
+* [STL files so you can print your own case](https://github.com/jpecsi/hopperhawk/tree/main/hardware/enclosure)
+
 
 
 ### Current Version/Release
