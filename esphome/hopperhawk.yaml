@@ -1,7 +1,7 @@
 ###################################
 #         [HopperHawk]            #
-#         Version: 1.0            #
-#     Published: 11/01/2024       #
+#         Version: 1.1            #
+#     Published: 04/16/2025       #
 # Joe Pecsi | Sideline Data, LLC. #
 ###################################
 
@@ -11,8 +11,20 @@ esphome:
   name: hopperhawk
   friendly_name: HopperHawk
   project:
-      name: "sidelinedata.hopperhawk"
-      version: "1.0"
+    name: "sidelinedata.hopperhawk"
+    version: "1.1"
+
+  on_boot:
+    priority: 600
+    then:
+      - component.update: tof_sensor
+      - delay: 2s 
+      - lambda: |-
+          ESP_LOGI("VERIFICATION", "===== HopperHawk v1.1 | Initial Sensor States =====");
+          ESP_LOGI("VERIFICATION", "TOF Sensor (Measurement): %.1f mm", id(tof_sensor).state);
+          ESP_LOGI("VERIFICATION", "Battery Sensor (Voltage): %.2f V", id(battery_voltage).state);
+          ESP_LOGI("VERIFICATION", "===================================================");
+      
 
 # Board Configuration
 esp32:
@@ -22,6 +34,8 @@ esp32:
 
 # Logging
 logger:
+  level: INFO
+
 
 # Enable captive portal for WiFi configuration
 captive_portal:
@@ -45,7 +59,7 @@ wifi:
   # Fallback hotspot if wifi unavilable
   ap:
     ssid: "HopperHawk"
-    password: "HopperHawk2024"
+    password: "SmokeSignals25"
 
 # Home Assistant API
 api:
@@ -95,6 +109,7 @@ sensor:
     filters:
       - multiply: 1000
     accuracy_decimals: 0
+
 
   # ADC for Voltage Monitoring (Battery)
   - platform: adc
@@ -183,7 +198,7 @@ button:
           // Set the empty value to the measurement just taken
           float current_level = id(tof_sensor).state;
           id(empty_distance_global) = current_level;
-          ESP_LOGD("lambda", "[Calibration] Setting empty measurement to %f", current_level);
+          ESP_LOGI("lambda", "[Calibration] Setting empty measurement to %f", current_level);
 
       # Update the measurement value for Home Assistant
       - component.update: empty_hopper_measurement
@@ -200,7 +215,7 @@ button:
           // Set the full value to the measurement just taken
           float current_level = id(tof_sensor).state;
           id(full_distance_global) = current_level;
-          ESP_LOGD("lambda", "[Calibration] Setting full measurement to %f", current_level);
+          ESP_LOGI("lambda", "[Calibration] Setting full measurement to %f", current_level);
 
       # Update the measurement value for Home Assistant
       - component.update: full_hopper_measurement
