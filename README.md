@@ -17,7 +17,7 @@
 | Component | Version | Date |
 | --------- | :-------: | :----: | 
 | Hardware  | v1.0    | 12/12/2024 |
-| Firmware  | v1.0    | 11/01/2024 |
+| Firmware  | v1.1    | 04/16/2025 |
 
 
 ### Update Intervals
